@@ -68,5 +68,6 @@ export function updateObjects(
   mainCharacter.mesh.position.copy(mainCharacter.body.position);
   mainCharacter.mesh.quaternion.copy(mainCharacter.body.quaternion);
   mainCharacter.body.position.vadd(position, mainCharacter.body.position);
+  console.log(mainCharacter.body.position);
   rotateBox(mainCharacter.body, new CANNON.Vec3(0, 1, 0), quaternion);
 }

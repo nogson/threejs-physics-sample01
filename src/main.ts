@@ -111,6 +111,8 @@ window.addEventListener("keydown", (e) => move(e));
 window.addEventListener("keyup", (e) => move(e));
 
 function move(e: KeyboardEvent) {
+  mainCharacter.body.wakeUp(); // ボディをアクティブにする
+
   if (e.type === "keydown") {
     if (e.code === "ArrowUp") {
       objectProps.speed += 0.01;
@@ -125,7 +127,7 @@ function move(e: KeyboardEvent) {
       objectProps.quaternion -= 0.1;
     }
     if (e.code === "Space") {
-      mainCharacter.body.velocity.y = 5; // y方向に5の速度でジャンプ
+      mainCharacter.body.velocity.y += 5; // y方向に5の速度でジャンプ
     }
   }
 }
