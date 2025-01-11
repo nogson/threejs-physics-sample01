@@ -77,6 +77,8 @@ scene.add(camera);
 const ambientLight = new THREE.AmbientLight(0xffffff, 2.1);
 scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
 scene.add(directionalLight);
 
 /**
@@ -100,7 +102,7 @@ world.addBody(floor.body);
 scene.add(floor.mesh);
 
 // Main Character
-const mainCharacter = createMainCharacter(defaultMaterial);
+const mainCharacter = await createMainCharacter(defaultMaterial);
 world.addBody(mainCharacter.body);
 scene.add(mainCharacter.mesh);
 
@@ -110,24 +112,35 @@ scene.add(mainCharacter.mesh);
 window.addEventListener("keydown", (e) => move(e));
 window.addEventListener("keyup", (e) => move(e));
 
+const pressedKeys = new Set<string>();
+
 function move(e: KeyboardEvent) {
   mainCharacter.body.wakeUp(); // ボディをアクティブにする
+  console.log(e.code, e.type);
 
   if (e.type === "keydown") {
-    if (e.code === "ArrowUp") {
-      objectProps.speed += 0.01;
+    pressedKeys.add(e.code);
+  } else if (e.type === "keyup") {
+    pressedKeys.delete(e.code);
+  }
+
+  // 押されているキーを処理
+  if (pressedKeys.has("ArrowUp")) {
+    objectProps.speed += 0.01;
+  }
+  if (pressedKeys.has("ArrowDown")) {
+    objectProps.speed -= 0.01;
+  }
+  if (pressedKeys.has("Space")) {
+    mainCharacter.body.velocity.y += 2;
+  }
+  // 回転
+  if (pressedKeys.has("ArrowUp") || pressedKeys.has("ArrowDown")) {
+    if (pressedKeys.has("ArrowRight")) {
+      objectProps.quaternion = -0.05;
     }
-    if (e.code === "ArrowDown") {
-      objectProps.speed -= 0.01;
-    }
-    if (e.code === "ArrowRight") {
-      objectProps.quaternion += 0.1;
-    }
-    if (e.code === "ArrowLeft") {
-      objectProps.quaternion -= 0.1;
-    }
-    if (e.code === "Space") {
-      mainCharacter.body.velocity.y += 5; // y方向に5の速度でジャンプ
+    if (pressedKeys.has("ArrowLeft")) {
+      objectProps.quaternion = +0.05;
     }
   }
 }
@@ -151,7 +164,6 @@ const tick = () => {
 
   objectProps.speed *= objectProps.friction;
   objectProps.quaternion *= objectProps.friction;
-
   // Render
   renderer.render(scene, camera);
 
