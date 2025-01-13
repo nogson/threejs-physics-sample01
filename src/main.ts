@@ -1,12 +1,17 @@
 import * as THREE from "three";
 import * as CANNON from "cannon-es";
+// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import CannonDebugger from "cannon-es-debugger";
+
 import {
   createFloor,
   createMainCharacter,
   updateObjects,
+  createBlock,
 } from "./utils/object";
 import { createDefaultMaterial } from "./utils/material";
-import { getNormal } from "./utils/util";
+import { initPhysics } from "./utils/physics";
+import { initLight } from "./utils/light";
 
 const sizes = {
   width: window.innerWidth,
@@ -49,47 +54,60 @@ window.addEventListener("resize", () => {
   sizes.height = window.innerHeight;
 
   // Update camera
-  camera.aspect = sizes.width / sizes.height;
-  camera.updateProjectionMatrix();
+  // camera.aspect = sizes.width / sizes.height;
+  cameraResize();
 
   // Update renderer
   renderer.setSize(sizes.width, sizes.height);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
+function cameraResize() {
+  const frustumSize = 10;
+  const aspect = window.innerWidth / window.innerHeight;
+  camera.left = (frustumSize * aspect) / -2;
+  camera.right = (frustumSize * aspect) / 2;
+  camera.top = frustumSize / 2;
+  camera.bottom = frustumSize / -2;
+  camera.updateProjectionMatrix();
+}
+
 /**
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  sizes.width / sizes.height,
-  0.1,
-  100
+// const camera = new THREE.PerspectiveCamera(
+//   75,
+//   sizes.width / sizes.height,
+//   0.1,
+//   100
+// );
+const camera = new THREE.OrthographicCamera(
+  0.1, // near
+  1000 // far
 );
-camera.position.set(-3, 3, 5);
-camera.lookAt(0, 0, 0);
+cameraResize();
 scene.add(camera);
+
+// OrbitControlsの設定
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableDamping = true; // 慣性を有効にする
 
 /**
  * Lights
  */
-const ambientLight = new THREE.AmbientLight(0xffffff, 2.1);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
-directionalLight.castShadow = true;
-directionalLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
-scene.add(directionalLight);
+const { ambientLight, directionalLight, spotLight } = initLight(scene);
 
 /**
  * Physics
  */
 
-const world = new CANNON.World();
-world.broadphase = new CANNON.SAPBroadphase(world);
-world.allowSleep = true;
-// 地球の重力加速度（重力）は 9.8 m/s2
-world.gravity.set(0, -9.82, 0);
+const world = initPhysics();
+
+// CannonDebuggerの設定
+const cannonDebugger = CannonDebugger(scene, world, {
+  color: 0xff0000, // デバッグ用のボディの色
+});
 
 // Material
 const { defaultMaterial, defaultMaterialContactMaterial } =
@@ -106,6 +124,16 @@ const mainCharacter = await createMainCharacter(defaultMaterial);
 world.addBody(mainCharacter.body);
 scene.add(mainCharacter.mesh);
 
+// Block
+const blockLength = 10;
+
+const block = createBlock({
+  scene,
+  world,
+  size: new THREE.Vector3(1, 1, 1),
+  position: new THREE.Vector3(0, 0, 5),
+});
+
 /**
  * Controls
  */
@@ -116,7 +144,6 @@ const pressedKeys = new Set<string>();
 
 function move(e: KeyboardEvent) {
   mainCharacter.body.wakeUp(); // ボディをアクティブにする
-  console.log(e.code, e.type);
 
   if (e.type === "keydown") {
     pressedKeys.add(e.code);
@@ -135,7 +162,7 @@ function move(e: KeyboardEvent) {
     mainCharacter.body.velocity.y += 2;
   }
   // 回転
-  if (pressedKeys.has("ArrowUp") || pressedKeys.has("ArrowDown")) {
+  if (objectProps.speed !== 0) {
     if (pressedKeys.has("ArrowRight")) {
       objectProps.quaternion = -0.05;
     }
@@ -160,10 +187,43 @@ const tick = () => {
 
   // Update physics world
   world.step(1 / 60, deltaTime, 3);
-  updateObjects(mainCharacter, objectProps);
+  updateObjects({
+    mainCharacter,
+    speed: objectProps.speed,
+    quaternion: objectProps.quaternion,
+  });
+
+  // block
+  block.mesh.position.copy(block.body.position);
+  block.mesh.quaternion.copy(block.body.quaternion);
 
   objectProps.speed *= objectProps.friction;
   objectProps.quaternion *= objectProps.friction;
+
+  if (pressedKeys.size === 0) {
+    if (objectProps.speed < 0.005 && objectProps.speed > -0.005) {
+      objectProps.speed = 0;
+    }
+  }
+
+  // カメラをmainCharacter.meshの位置に合わせて移動
+  camera.position.x = mainCharacter.mesh.position.x + 5;
+  camera.position.y = mainCharacter.mesh.position.y + 5; // 少し上から見る
+  camera.position.z = mainCharacter.mesh.position.z + 5; // 少し後ろから見る
+  camera.lookAt(mainCharacter.mesh.position);
+
+  spotLight.position.set(
+    mainCharacter.mesh.position.x,
+    mainCharacter.mesh.position.y + 8,
+    mainCharacter.mesh.position.z + 8
+  );
+
+  if (objectProps.speed !== 0) {
+    mainCharacter.mixer.update(deltaTime);
+  }
+
+  cannonDebugger.update(); // Update the CannonDebugger meshes
+
   // Render
   renderer.render(scene, camera);
 
