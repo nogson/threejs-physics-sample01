@@ -124,20 +124,22 @@ export function createBlock({
   world,
   position,
   size,
+  bodyMaterial,
 }: {
   scene: THREE.Scene;
   world: CANNON.World;
   position: THREE.Vector3;
   size: THREE.Vector3;
+  bodyMaterial: CANNON.Material;
 }) {
-  
   const shape = new CANNON.Box(
     new CANNON.Vec3(size.x / 2, size.y / 2, size.z / 2)
   );
   const body = new CANNON.Body({
     mass: 1,
-    position: new CANNON.Vec3(0, 0, 5),
+    position: new CANNON.Vec3(position.x, position.y, position.z),
     shape: shape,
+    material: bodyMaterial,
   });
 
   const geometry = new THREE.BoxGeometry(size.x, size.y, size.z);

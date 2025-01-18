@@ -126,13 +126,21 @@ scene.add(mainCharacter.mesh);
 
 // Block
 const blockLength = 10;
-
-const block = createBlock({
-  scene,
-  world,
-  size: new THREE.Vector3(1, 1, 1),
-  position: new THREE.Vector3(0, 0, 5),
-});
+const blocks: any = [];
+for (let i = 0; i < blockLength; i++) {
+  const size = 0.5;
+  const x = (i % 5) * 0.5;
+  const y = Math.floor(i / 5) + 1;
+  blocks.push(
+    createBlock({
+      scene,
+      world,
+      size: new THREE.Vector3(size, size, size),
+      position: new THREE.Vector3(x, y, 5),
+      bodyMaterial: defaultMaterial,
+    })
+  );
+}
 
 /**
  * Controls
@@ -194,8 +202,10 @@ const tick = () => {
   });
 
   // block
-  block.mesh.position.copy(block.body.position);
-  block.mesh.quaternion.copy(block.body.quaternion);
+  blocks.forEach((block: any) => {
+    block.mesh.position.copy(block.body.position);
+    block.mesh.quaternion.copy(block.body.quaternion);
+  });
 
   objectProps.speed *= objectProps.friction;
   objectProps.quaternion *= objectProps.friction;
