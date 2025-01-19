@@ -1,17 +1,23 @@
 import * as THREE from "three";
-import * as CANNON from "cannon-es";
 // import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import CannonDebugger from "cannon-es-debugger";
-
+import { updateObjects } from "./utils/object";
 import {
   createFloor,
   createMainCharacter,
-  updateObjects,
-  createBlock,
-} from "./utils/object";
-import { createDefaultMaterial } from "./utils/material";
+  createPointItems,
+  createBlocks,
+  createTree,
+} from "./utils/objectCreate";
+import { createPhysicsMaterial } from "./utils/material";
 import { initPhysics } from "./utils/physics";
 import { initLight } from "./utils/light";
+import { initGameState } from "./components/GameState";
+import { globalState } from "./models/globalState";
+import { isObjectTippedOver, playSound } from "./utils/util";
+import enginSound from "./assets/sound/engine.mp3";
+
+initGameState();
 
 const sizes = {
   width: window.innerWidth,
@@ -110,37 +116,43 @@ const cannonDebugger = CannonDebugger(scene, world, {
 });
 
 // Material
-const { defaultMaterial, defaultMaterialContactMaterial } =
-  createDefaultMaterial();
-world.addContactMaterial(defaultMaterialContactMaterial);
+const defaultMaterial = createPhysicsMaterial();
+world.addContactMaterial(defaultMaterial.materialContactMaterial);
 
 // Floor
-const floor = createFloor(defaultMaterial);
+const floor = createFloor(defaultMaterial.material);
 world.addBody(floor.body);
 scene.add(floor.mesh);
 
 // Main Character
-const mainCharacter = await createMainCharacter(defaultMaterial);
+const mainCharacter = await createMainCharacter();
 world.addBody(mainCharacter.body);
 scene.add(mainCharacter.mesh);
 
 // Block
-const blockLength = 10;
-const blocks: any = [];
-for (let i = 0; i < blockLength; i++) {
-  const size = 0.5;
-  const x = (i % 5) * 0.5;
-  const y = Math.floor(i / 5) + 1;
-  blocks.push(
-    createBlock({
-      scene,
-      world,
-      size: new THREE.Vector3(size, size, size),
-      position: new THREE.Vector3(x, y, 5),
-      bodyMaterial: defaultMaterial,
-    })
-  );
-}
+const blockItems = createBlocks({
+  scene,
+  world,
+});
+
+const trees = await createTree({ scene, world });
+
+// Passing point
+const pointItems = createPointItems({ scene, world });
+
+// pointItems.forEach((point) => {
+//   point.body.addEventListener("collide", (e: any) => {
+//     if (e.body.name === "mainCharacter") {
+//       console.log(isObjectTippedOver(point.body));
+
+//       // if (isObjectTippedOver(point.body) && point.body.isActive) {
+//       //   globalState.score += 1;
+//       //   point.body.isActive = false;
+//       //   point.body.removeEventListener("collide");
+//       // }
+//     }
+//   });
+// });
 
 /**
  * Controls
@@ -155,6 +167,7 @@ function move(e: KeyboardEvent) {
 
   if (e.type === "keydown") {
     pressedKeys.add(e.code);
+    // playSound(enginSound);
   } else if (e.type === "keyup") {
     pressedKeys.delete(e.code);
   }
@@ -197,18 +210,13 @@ const tick = () => {
   world.step(1 / 60, deltaTime, 3);
   updateObjects({
     mainCharacter,
+    objects: [blockItems, pointItems, trees],
     speed: objectProps.speed,
     quaternion: objectProps.quaternion,
   });
 
-  // block
-  blocks.forEach((block: any) => {
-    block.mesh.position.copy(block.body.position);
-    block.mesh.quaternion.copy(block.body.quaternion);
-  });
-
   objectProps.speed *= objectProps.friction;
-  objectProps.quaternion *= objectProps.friction;
+  objectProps.quaternion *= objectProps.friction * 0.95;
 
   if (pressedKeys.size === 0) {
     if (objectProps.speed < 0.005 && objectProps.speed > -0.005) {
@@ -231,6 +239,13 @@ const tick = () => {
   if (objectProps.speed !== 0) {
     mainCharacter.mixer.update(deltaTime);
   }
+
+  pointItems.forEach((point) => {
+    if (isObjectTippedOver(point.body) && point.body.isActive) {
+      globalState.score += 1;
+      point.body.isActive = false;
+    }
+  });
 
   cannonDebugger.update(); // Update the CannonDebugger meshes
 

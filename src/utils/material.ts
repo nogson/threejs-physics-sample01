@@ -1,16 +1,22 @@
 import * as CANNON from "cannon-es";
 
-export function createDefaultMaterial() {
-  const defaultMaterial = new CANNON.Material("default");
+export function createPhysicsMaterial({
+  friction = 10,
+  restitution = 0.0,
+}: {
+  friction?: number;
+  restitution?: number;
+} = {}) {
+  const material = new CANNON.Material("default");
 
-  const defaultMaterialContactMaterial = new CANNON.ContactMaterial(
-    defaultMaterial,
-    defaultMaterial,
+  const materialContactMaterial = new CANNON.ContactMaterial(
+    material,
+    material,
     {
-      friction: 0.2,
-      restitution: 0.5,
+      friction,
+      restitution,
     }
   );
 
-  return { defaultMaterial, defaultMaterialContactMaterial };
+  return { material, materialContactMaterial };
 }
