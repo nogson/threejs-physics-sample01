@@ -180,7 +180,7 @@ function move(e: KeyboardEvent) {
     objectProps.speed -= 0.01;
   }
   if (pressedKeys.has("Space")) {
-    mainCharacter.body.velocity.y += 2;
+    //mainCharacter.body.velocity.y += 2;
   }
   // 回転
   if (objectProps.speed !== 0) {
@@ -231,9 +231,9 @@ const tick = () => {
   camera.lookAt(mainCharacter.mesh.position);
 
   spotLight.position.set(
-    mainCharacter.mesh.position.x,
-    mainCharacter.mesh.position.y + 8,
-    mainCharacter.mesh.position.z + 8
+    mainCharacter.body.position.x,
+    mainCharacter.body.position.y + 8,
+    mainCharacter.body.position.z
   );
 
   if (objectProps.speed !== 0) {

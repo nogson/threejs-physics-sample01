@@ -34,7 +34,7 @@ export async function createMainCharacter() {
   const size = getMeshSize(mesh);
   const scale = 1 / size.y;
   const bodyMaterial = createPhysicsMaterial({
-    friction: 1.5,
+    friction: 0.5,
     restitution: 0.1,
   });
 
@@ -65,7 +65,7 @@ export async function createMainCharacter() {
     new CANNON.Vec3(meshSize.x / 2, meshSize.y / 2, meshSize.z / 2)
   );
   const body = new CANNON.Body({
-    mass: 20,
+    mass: 50,
     position: new CANNON.Vec3(0, 3, 0),
     shape: shape,
     material: bodyMaterial.material,
@@ -141,13 +141,43 @@ export function createBlocks({
   world: CANNON.World;
 }) {
   const bodyMaterial = createPhysicsMaterial({
-    friction: 0.1,
-    restitution: 0.5,
+    friction: 0.5,
+    restitution: 2,
   });
 
-  const blockLength = 10;
   const items: PhysicsObjectType[] = [];
-  for (let i = 0; i < blockLength; i++) {
+
+  for (let i = 0; i < 5; i++) {
+    const size = 0.5;
+    const z = (i % 5) * size;
+    const y = Math.floor(i / 5) / 2 + size / 2;
+    const block = createBlock({
+      size: new THREE.Vector3(size / 2, size, size),
+      position: new THREE.Vector3(3, y, z),
+      bodyMaterial: bodyMaterial.material,
+    });
+    items.push(block);
+    world.addBody(block.body);
+    scene.add(block.mesh);
+  }
+
+  for (let i = 0; i < 16; i++) {
+    const size = 0.5;
+    const x = -7;
+    const y = Math.floor(i / 8) * size + size / 2;
+    const z = (i % 8) * size - 4;
+
+    const block = createBlock({
+      size: new THREE.Vector3(((2 - Math.floor(i / 8)) * size) / 2, size, size),
+      position: new THREE.Vector3(x, y, z),
+      bodyMaterial: bodyMaterial.material,
+    });
+    items.push(block);
+    world.addBody(block.body);
+    scene.add(block.mesh);
+  }
+
+  for (let i = 0; i < 10; i++) {
     const size = 0.5;
     const x = (i % 5) * size;
     const y = Math.floor(i / 5) / 2 + size / 2;
@@ -163,6 +193,31 @@ export function createBlocks({
   return items;
 }
 
+function ceateSphere() {
+  const geometry = new THREE.SphereGeometry(0.5, 32, 32);
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x00ff00,
+    metalness: 0.3,
+    roughness: 0.4,
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+
+  const bodyMaterial = createPhysicsMaterial({
+    friction: 1,
+    restitution: 10,
+  });
+  const shape = new CANNON.Sphere(0.5);
+  const body = new CANNON.Body({
+    mass: 1,
+    shape: shape,
+    material: bodyMaterial.material,
+    position: new CANNON.Vec3(0, 0.5, 0),
+  }) as CANNON.Body & { name: string; isActive: boolean }; // nameを追加したいので、型を拡張
+  return mesh;
+}
+
 function createPoint({
   bodyMaterial,
   position,
@@ -170,7 +225,7 @@ function createPoint({
   bodyMaterial: CANNON.Material;
   position: CANNON.Vec3;
 }) {
-  const geometry = new THREE.ConeGeometry(0.25, 1, 32);
+  const geometry = new THREE.ConeGeometry(0.1, 1, 32);
   const material = new THREE.MeshStandardMaterial({
     color: 0xff0000,
     metalness: 0.3,
@@ -179,7 +234,7 @@ function createPoint({
   const mesh = new THREE.Mesh(geometry, material);
   mesh.castShadow = true;
   mesh.receiveShadow = true;
-  const shape = new CANNON.Cylinder(0.25, 0.25, 1, 32);
+  const shape = new CANNON.Cylinder(0.2, 0.2, 1, 32);
 
   const body = new CANNON.Body({
     mass: 1,
@@ -209,8 +264,8 @@ export function createPointItems({
 }) {
   const items: PhysicsObjectType[] = [];
   const bodyMaterial = createPhysicsMaterial({
-    friction: 0.1,
-    restitution: 0.5,
+    friction: 1,
+    restitution: 10,
   });
 
   const itemLength = 10;

@@ -3,7 +3,7 @@ import * as THREE from "three";
 export function initLight(scene: THREE.Scene) {
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
   scene.add(ambientLight);
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 3);
   directionalLight.castShadow = true;
   directionalLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
   // 影のカメラ設定を調整
@@ -22,7 +22,7 @@ export function initLight(scene: THREE.Scene) {
   spotLight.castShadow = true;
   spotLight.shadow.mapSize = new THREE.Vector2(1024, 1024);
   spotLight.angle = Math.PI / 4;
-  spotLight.penumbra = 1; // 陰影の柔らかさ
+  spotLight.penumbra = 2; // 陰影の柔らかさ
   spotLight.decay = 2; // 光の減衰率
   spotLight.distance = 200; // 光の届く距離
 
