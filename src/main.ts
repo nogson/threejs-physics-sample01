@@ -8,6 +8,9 @@ import {
   createPointItems,
   createBlocks,
   createTree,
+  createSpheres,
+  createTextObject,
+  createCar,
 } from "./utils/objectCreate";
 import { createPhysicsMaterial } from "./utils/material";
 import { initPhysics } from "./utils/physics";
@@ -102,7 +105,10 @@ scene.add(camera);
 /**
  * Lights
  */
-const { ambientLight, directionalLight, spotLight } = initLight(scene);
+const { spotLight } = initLight(scene);
+const spotLightTargetObject = new THREE.Object3D();
+scene.add(spotLightTargetObject);
+spotLight.target = spotLightTargetObject;
 
 /**
  * Physics
@@ -135,24 +141,31 @@ const blockItems = createBlocks({
   world,
 });
 
+// Tree
 const trees = await createTree({ scene, world });
+
+// sphere
+const spheres = createSpheres({ scene, world });
+
+// Text
+const texts1 = await createTextObject({
+  scene,
+  world,
+  text: "GO!GO!GO!",
+  position: { x: 3, y: 1, z: -3 },
+});
+
+const texts2 = await createTextObject({
+  scene,
+  world,
+  text: "FIGHT!",
+  position: { x: -3, y: 1, z: 3 },
+});
 
 // Passing point
 const pointItems = createPointItems({ scene, world });
 
-// pointItems.forEach((point) => {
-//   point.body.addEventListener("collide", (e: any) => {
-//     if (e.body.name === "mainCharacter") {
-//       console.log(isObjectTippedOver(point.body));
-
-//       // if (isObjectTippedOver(point.body) && point.body.isActive) {
-//       //   globalState.score += 1;
-//       //   point.body.isActive = false;
-//       //   point.body.removeEventListener("collide");
-//       // }
-//     }
-//   });
-// });
+const cars = await createCar({ scene, world });
 
 /**
  * Controls
@@ -210,7 +223,7 @@ const tick = () => {
   world.step(1 / 60, deltaTime, 3);
   updateObjects({
     mainCharacter,
-    objects: [blockItems, pointItems, trees],
+    objects: [blockItems, pointItems, trees, spheres, texts1, texts2, cars],
     speed: objectProps.speed,
     quaternion: objectProps.quaternion,
   });
@@ -230,11 +243,8 @@ const tick = () => {
   camera.position.z = mainCharacter.mesh.position.z + 5; // 少し後ろから見る
   camera.lookAt(mainCharacter.mesh.position);
 
-  spotLight.position.set(
-    mainCharacter.body.position.x,
-    mainCharacter.body.position.y + 8,
-    mainCharacter.body.position.z
-  );
+  // スポットライトのターゲットをメインキャラクターの位置に更新
+  spotLightTargetObject.position.copy(mainCharacter.mesh.position);
 
   if (objectProps.speed !== 0) {
     mainCharacter.mixer.update(deltaTime);
