@@ -11,6 +11,18 @@
     <div id="app">
       <canvas class="webgl"></canvas>
       <div id="gameState">0</div>
+      <div id="information">
+        <img src="/images/controller.png" alt="controller" width="150" />
+      </div>
+      <div id="gameStart">
+        <div class="text-animate">Game Start</div>
+      </div>
+      <div id="gameOver">
+        <div>
+          <div>Game Over</div>
+          <button onclick="location.reload()">Retry</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

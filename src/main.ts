@@ -29,7 +29,7 @@ const sizes = {
 
 const objectProps = {
   speed: 0,
-  quaternion: 0,
+  radian: 0,
   friction: 0.98,
 };
 
@@ -193,15 +193,15 @@ function move(e: KeyboardEvent) {
     objectProps.speed -= 0.01;
   }
   if (pressedKeys.has("Space")) {
-    //mainCharacter.body.velocity.y += 2;
+    mainCharacter.body.quaternion.x = 0.1;
   }
   // 回転
   if (objectProps.speed !== 0) {
     if (pressedKeys.has("ArrowRight")) {
-      objectProps.quaternion = -0.05;
+      objectProps.radian = -0.05;
     }
     if (pressedKeys.has("ArrowLeft")) {
-      objectProps.quaternion = +0.05;
+      objectProps.radian = +0.05;
     }
   }
 }
@@ -225,16 +225,19 @@ const tick = () => {
     mainCharacter,
     objects: [blockItems, pointItems, trees, spheres, texts1, texts2, cars],
     speed: objectProps.speed,
-    quaternion: objectProps.quaternion,
+    radian: objectProps.radian,
   });
 
   objectProps.speed *= objectProps.friction;
-  objectProps.quaternion *= objectProps.friction * 0.95;
-
+  objectProps.radian *= objectProps.friction * 0.95;
   if (pressedKeys.size === 0) {
     if (objectProps.speed < 0.005 && objectProps.speed > -0.005) {
       objectProps.speed = 0;
     }
+  }
+
+  if (objectProps.radian < 0.005 && objectProps.radian > -0.005) {
+    objectProps.radian = 0;
   }
 
   // カメラをmainCharacter.meshの位置に合わせて移動
@@ -250,14 +253,21 @@ const tick = () => {
     mainCharacter.mixer.update(deltaTime);
   }
 
+  // Check if mainCharacter is tipped over
+  if (isObjectTippedOver(mainCharacter.body, 0.7)) {
+    console.log("mainCharacter has tipped over");
+    document.getElementById("gameOver")!.setAttribute("class", "show");
+  }
+
   pointItems.forEach((point) => {
-    if (isObjectTippedOver(point.body) && point.body.isActive) {
+    if (isObjectTippedOver(point.body, 0.3) && point.body.isActive) {
       globalState.score += 1;
       point.body.isActive = false;
+      console.log("point has tipped over");
     }
   });
 
-  cannonDebugger.update(); // Update the CannonDebugger meshes
+  //cannonDebugger.update(); // Update the CannonDebugger meshes
 
   // Render
   renderer.render(scene, camera);

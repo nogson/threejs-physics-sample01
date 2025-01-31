@@ -1,8 +1,8 @@
 import * as CANNON from "cannon-es";
 
 export function createPhysicsMaterial({
-  friction = 10,
-  restitution = 0.0,
+  friction = 5,
+  restitution = 0.4,
 }: {
   friction?: number;
   restitution?: number;

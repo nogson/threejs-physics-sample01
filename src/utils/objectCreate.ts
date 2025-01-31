@@ -82,7 +82,7 @@ export async function createMainCharacter() {
   );
   const body = new CANNON.Body({
     mass: 50,
-    position: new CANNON.Vec3(0, 3, 0),
+    position: new CANNON.Vec3(0, meshSize.y / 2, 0),
     shape: shape,
     material: bodyMaterial.material,
   }) as CANNON.Body & { name: string }; // nameを追加したいので、型を拡張
@@ -229,8 +229,8 @@ function createSphere({
   mesh.receiveShadow = true;
 
   const bodyMaterial = createPhysicsMaterial({
-    friction: 5,
-    restitution: 10,
+    friction: 0.1,
+    restitution: 0.5,
   });
   const shape = new CANNON.Sphere(size);
   const body = new CANNON.Body({
@@ -252,7 +252,7 @@ export function createSpheres({
 }) {
   const items: PhysicsObjectType[] = [];
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 50; i++) {
     const position = new CANNON.Vec3(getPosition(), 0.5, getPosition());
     const sphere = createSphere({ scene, world, position });
 
@@ -310,14 +310,15 @@ export function createPointItems({
 }) {
   const items: PhysicsObjectType[] = [];
   const bodyMaterial = createPhysicsMaterial({
-    friction: 1,
-    restitution: 10,
+    friction: 10,
+    restitution: 1,
   });
 
   const itemLength = 10;
   for (let i = 0; i < itemLength; i++) {
     const position = new CANNON.Vec3(getPosition(), 0.5, getPosition());
     const item = createPoint({ bodyMaterial: bodyMaterial.material, position });
+    item.body.name = "point" + i;
 
     world.addBody(item.body);
     scene.add(item.mesh);

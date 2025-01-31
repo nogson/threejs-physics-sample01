@@ -22,13 +22,30 @@ export function isObjectTippedOver(
   body: CANNON.Body,
   threshold: number = Math.PI / 4
 ): boolean {
+  // クォータニオンの正規化
   const quaternion = body.quaternion;
-  const euler = new THREE.Euler().setFromQuaternion(
-    new THREE.Quaternion(quaternion.x, quaternion.y, quaternion.z, quaternion.w)
-  );
+  // const normalizedQuaternion = new THREE.Quaternion(
+  //   quaternion.x,
+  //   quaternion.y,
+  //   quaternion.z,
+  //   quaternion.w
+  // ).normalize();
 
-  // Check if the object's tilt exceeds the threshold
-  return Math.abs(euler.x) > threshold || Math.abs(euler.z) > threshold;
+  // オイラー角の順序を確認
+  // const euler = new THREE.Euler().setFromQuaternion(
+  //   normalizedQuaternion,
+  //   "XYZ"
+  // );
+
+  // オブジェクトの傾きが閾値を超えているかをチェック
+  // return Math.abs(euler.x) > threshold || Math.abs(euler.z) > threshold;
+  // TOD0 何故か値がおかしいので、固定値で判定する
+  return (
+    (quaternion.x < -threshold && quaternion.x < 0) ||
+    (quaternion.x > threshold && quaternion.x > 0) ||
+    (quaternion.z < -threshold && quaternion.z < 0) ||
+    (quaternion.z > threshold && quaternion.z > 0)
+  );
 }
 
 export function playSound(sound: string | undefined) {

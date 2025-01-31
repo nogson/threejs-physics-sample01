@@ -15,23 +15,25 @@ export function updateObjects({
   mainCharacter,
   objects,
   speed,
-  quaternion,
+  radian,
 }: {
   mainCharacter: PhysicsObjectType;
   objects: PhysicsObjectType[][];
   speed: number;
-  quaternion: number;
+  radian: number;
 }) {
   const position = moveInNormalDirection(mainCharacter.body, speed); // 法線方向に移動
   const items = objects.flat();
+
+  rotateBox(mainCharacter.body, new CANNON.Vec3(0, 1, 0), radian);
   mainCharacter.mesh.position.copy(mainCharacter.body.position);
   mainCharacter.mesh.quaternion.copy(mainCharacter.body.quaternion);
+
   mainCharacter.body.position.vadd(position, mainCharacter.body.position);
 
   items.forEach((object) => {
+    //console.log(object.body.name);
     object.mesh.position.copy(object.body.position);
     object.mesh.quaternion.copy(object.body.quaternion);
   });
-
-  rotateBox(mainCharacter.body, new CANNON.Vec3(0, 1, 0), quaternion);
 }
