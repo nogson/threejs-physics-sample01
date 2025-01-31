@@ -163,7 +163,7 @@ const texts2 = await createTextObject({
 });
 
 // Passing point
-const pointItems = createPointItems({ scene, world });
+const pointItems = await createPointItems({ scene, world });
 
 const cars = await createCar({ scene, world });
 
@@ -254,7 +254,7 @@ const tick = () => {
   }
 
   // Check if mainCharacter is tipped over
-  if (isObjectTippedOver(mainCharacter.body, 0.7)) {
+  if (isObjectTippedOver(mainCharacter.body, 0.5)) {
     console.log("mainCharacter has tipped over");
     document.getElementById("gameOver")!.setAttribute("class", "show");
   }

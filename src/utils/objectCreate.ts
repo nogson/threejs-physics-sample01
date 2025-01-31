@@ -252,7 +252,7 @@ export function createSpheres({
 }) {
   const items: PhysicsObjectType[] = [];
 
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 20; i++) {
     const position = new CANNON.Vec3(getPosition(), 0.5, getPosition());
     const sphere = createSphere({ scene, world, position });
 
@@ -266,20 +266,13 @@ export function createSpheres({
 
 function createPoint({
   bodyMaterial,
+  mesh,
   position,
 }: {
   bodyMaterial: CANNON.Material;
   position: CANNON.Vec3;
+  mesh: THREE.Object3D<THREE.Object3DEventMap>;
 }) {
-  const geometry = new THREE.ConeGeometry(0.1, 1, 32);
-  const material = new THREE.MeshStandardMaterial({
-    color: 0xff0000,
-    metalness: 0,
-    roughness: 1,
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
   const shape = new CANNON.Cylinder(0.2, 0.2, 1, 32);
 
   const body = new CANNON.Body({
@@ -301,7 +294,7 @@ function getPosition() {
   return pos > 0 ? pos + 2 : pos - 2;
 }
 
-export function createPointItems({
+export async function createPointItems({
   scene,
   world,
 }: {
@@ -314,12 +307,28 @@ export function createPointItems({
     restitution: 1,
   });
 
+  const gltf = await loadModel("src/assets/models/point.glb");
+
   const itemLength = 10;
   for (let i = 0; i < itemLength; i++) {
-    const position = new CANNON.Vec3(getPosition(), 0.5, getPosition());
-    const item = createPoint({ bodyMaterial: bodyMaterial.material, position });
-    item.body.name = "point" + i;
+    const mesh = gltf.scene.clone();
+    const size = getMeshSize(mesh);
+    const scale = 1 / size.y;
+    mesh.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
+    mesh.scale.set(scale, scale, scale);
 
+    const position = new CANNON.Vec3(getPosition(), size.y / 2, getPosition());
+    const item = createPoint({
+      bodyMaterial: bodyMaterial.material,
+      position,
+      mesh: mesh,
+    });
+    item.body.name = "point" + i;
     world.addBody(item.body);
     scene.add(item.mesh);
     items.push(item);

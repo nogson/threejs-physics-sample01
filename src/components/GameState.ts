@@ -5,7 +5,7 @@ const gameStateElm = document.getElementById("gameState");
 export function initGameState() {
   if (gameStateElm) {
     gameStateElm.innerHTML = `
-          <div>Score: 0</div>
+          
         `;
   }
 
@@ -17,8 +17,11 @@ export function initGameState() {
 export function renderGameState() {
   let score = globalState.score;
   if (gameStateElm) {
-    gameStateElm.innerHTML = `
-      <div>Score: ${score}</div>
-    `;
+    let html = "";
+    for (let i = 0; i < score; i++) {
+      html += `<img src="images/point.png" class="point" />`;
+    }
+
+    gameStateElm.innerHTML = html;
   }
 }
