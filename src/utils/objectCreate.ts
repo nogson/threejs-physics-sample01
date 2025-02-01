@@ -6,7 +6,9 @@ import { createPhysicsMaterial } from "./material";
 import { FontLoader } from "three/addons/loaders/FontLoader.js";
 import { TextGeometry } from "three/addons/geometries/TextGeometry.js";
 const basePath = import.meta.env.BASE_URL;
-console.log(basePath);
+const host = window.location.origin;
+const modelPath = `${host}${basePath}`;
+console.log(modelPath);
 const colors = [0xffee80, 0xff2be6, 0xff2b2e, 0x2b2bff, 0x2bff2b];
 
 function loadModel(src: string): Promise<GLTF> {
@@ -46,7 +48,7 @@ function getMeshSize(mesh: THREE.Object3D<THREE.Object3DEventMap>) {
 }
 
 export async function createMainCharacter() {
-  const gltf = await loadModel(`/${basePath}glb/motorcycle.glb`);
+  const gltf = await loadModel(`${modelPath}glb/motorcycle.glb`);
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const scale = 1 / size.y;
@@ -308,7 +310,7 @@ export async function createPointItems({
     restitution: 1,
   });
 
-  const gltf = await loadModel(`${basePath}glb/point.glb`);
+  const gltf = await loadModel(`${modelPath}glb/point.glb`);
 
   const itemLength = 10;
   for (let i = 0; i < itemLength; i++) {
@@ -347,7 +349,7 @@ export async function createTree({
 }) {
   const treesLength = 10;
   const trees = [];
-  const gltf = await loadModel(`${basePath}glb/tree.glb`);
+  const gltf = await loadModel(`${modelPath}glb/tree.glb`);
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const bodyMaterial = createPhysicsMaterial({
@@ -479,7 +481,7 @@ export async function createCar({
   world: CANNON.World;
 }) {
   const items = [];
-  const gltf = await loadModel(`${basePath}glb/car.glb`);
+  const gltf = await loadModel(`${modelPath}glb/car.glb`);
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const bodyMaterial = createPhysicsMaterial({
