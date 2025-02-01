@@ -45,7 +45,7 @@ function getMeshSize(mesh: THREE.Object3D<THREE.Object3DEventMap>) {
 }
 
 export async function createMainCharacter() {
-  const gltf = await loadModel("src/assets/models/motorcycle.glb");
+  const gltf = await loadModel("./src/assets/models/motorcycle.glb");
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const scale = 1 / size.y;
@@ -307,7 +307,7 @@ export async function createPointItems({
     restitution: 1,
   });
 
-  const gltf = await loadModel("src/assets/models/point.glb");
+  const gltf = await loadModel("./src/assets/models/point.glb");
 
   const itemLength = 10;
   for (let i = 0; i < itemLength; i++) {
@@ -346,7 +346,7 @@ export async function createTree({
 }) {
   const treesLength = 10;
   const trees = [];
-  const gltf = await loadModel("src/assets/models/tree.glb");
+  const gltf = await loadModel("./src/assets/models/tree.glb");
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const bodyMaterial = createPhysicsMaterial({
@@ -478,7 +478,7 @@ export async function createCar({
   world: CANNON.World;
 }) {
   const items = [];
-  const gltf = await loadModel("src/assets/models/car.glb");
+  const gltf = await loadModel("./src/assets/models/car.glb");
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const bodyMaterial = createPhysicsMaterial({
