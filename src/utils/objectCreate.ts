@@ -308,7 +308,7 @@ export async function createPointItems({
     restitution: 1,
   });
 
-  const gltf = await loadModel(`${basePath}models/point.glb`);
+  const gltf = await loadModel(`${basePath}glb/point.glb`);
 
   const itemLength = 10;
   for (let i = 0; i < itemLength; i++) {
