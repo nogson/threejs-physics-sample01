@@ -9,7 +9,7 @@ export function initGameState() {
         `;
   }
 
-  window.addEventListener("globalStateChange", (event) => {
+  window.addEventListener("globalStateChange", () => {
     renderGameState();
   });
 }
