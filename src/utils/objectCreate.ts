@@ -46,7 +46,7 @@ function getMeshSize(mesh: THREE.Object3D<THREE.Object3DEventMap>) {
 }
 
 export async function createMainCharacter() {
-  const gltf = await loadModel(`${basePath}glb/motorcycle.glb`);
+  const gltf = await loadModel(`/${basePath}glb/motorcycle.glb`);
   const mesh = gltf.scene;
   const size = getMeshSize(mesh);
   const scale = 1 / size.y;
